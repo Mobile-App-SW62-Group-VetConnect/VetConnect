@@ -159,26 +159,20 @@ class VeterinaryRepository {
         }
     }
 
-    // Favoritos
-    suspend fun getFavoritesForUser(userId: String): ApiResult<List<Favorite>> =
-        withContext(Dispatchers.IO) {
-            safeApiCall {
-                api.getMockFavorites().favorites.filter { it.userId == userId }
-            }
+     suspend fun getFavoritesForUser(userId: String): ApiResult<List<Favorite>> {
+    return try {
+        val response = api.getFavoritesForUser()
+        if (response.isSuccessful && response.body() != null) {
+            // Filtramos los favoritos por userId
+            val filteredFavorites = response.body()!!.favorites.filter { it.userId == userId }
+            ApiResult.Success(filteredFavorites)
+        } else {
+            ApiResult.Error("Error al obtener los favoritos")
         }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun addFavorite(userId: String, veterinaryId: String): ApiResult<Favorite> =
-        withContext(Dispatchers.IO) {
-            safeApiCall {
-                Favorite(
-                    id = "fav-${System.currentTimeMillis()}",
-                    userId = userId,
-                    veterinaryId = veterinaryId,
-                    createdAt = LocalDateTime.now()
-                )
-            }
-        }
+    } catch (e: Exception) {
+        ApiResult.Error(e.message ?: "Error desconocido")
+    }
+}
 
     // Utilidades
     private suspend fun getAveragePrice(veterinaryId: String): Double {

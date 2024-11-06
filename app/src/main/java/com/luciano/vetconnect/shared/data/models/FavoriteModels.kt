@@ -7,12 +7,11 @@ data class Favorite(
     val id: String,
     val userId: String,
     val veterinaryId: String,
-    @SerializedName("createdAt")
-    val createdAt: LocalDateTime? = null
+    val createdAt: String
 )
 
-data class FavoriteResponse(
-    val favorites: List<Favorite> = emptyList()
+data class FavoritesResponse(
+    val favorites: List<Favorite>
 )
 
 data class FavoriteRequest(

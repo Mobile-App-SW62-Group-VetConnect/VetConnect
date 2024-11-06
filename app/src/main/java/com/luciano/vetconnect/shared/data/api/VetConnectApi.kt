@@ -1,5 +1,6 @@
 package com.luciano.vetconnect.shared.data.api
 
+import FavoriteResponse
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.google.gson.GsonBuilder
@@ -7,6 +8,7 @@ import com.luciano.vetconnect.shared.data.models.*
 import kotlinx.datetime.LocalDateTime
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
@@ -46,11 +48,8 @@ interface ApiService {
     suspend fun getUserById(@Path("userId") userId: String): User
 
     // Favoritos
-    @GET("favorites")
-    suspend fun getFavorites(): FavoriteResponse
-
-    @GET("favorites")
-    suspend fun getUserFavorites(@Query("userId") userId: String): FavoriteResponse
+    @GET("646ff380-c8ce-4123-83fc-8a9331bfe01e") // Reemplaza esto con el ID de tu JSON en mocki.io
+    suspend fun getFavoritesForUser(): Response<FavoritesResponse>
 
     // Mock endpoints para desarrollo
     @GET("bd5e139a-4409-476e-b15e-fa67be717a7e")
