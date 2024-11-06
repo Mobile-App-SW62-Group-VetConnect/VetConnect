@@ -44,7 +44,7 @@ import com.luciano.vetconnect.features.veterinary.settings.VetChangePasswordScre
 import com.luciano.vetconnect.features.veterinary.settings.VetNotificationSettingsScreen
 import com.luciano.vetconnect.features.veterinary.settings.VetSettingsScreen
 import com.luciano.vetconnect.features.veterinary.statistics.VetStatisticsScreen
-import com.luciano.vetconnect.shared.ui.components.MenuOverlay
+import com.luciano.vetconnect.ui.components.MenuOverlay
 import com.luciano.vetconnect.shared.ui.components.MenuOverlayVet
 import com.luciano.vetconnect.shared.ui.components.NotificationSettingsScreen
 import com.luciano.vetconnect.shared.ui.theme.*
