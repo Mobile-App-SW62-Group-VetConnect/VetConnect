@@ -56,7 +56,7 @@ sealed class Screen(val route: String) {
     object ForgotPassword : Screen("forgot_password")
     object ChangePassword : Screen("change_password")
 
-    // Cliente
+    // Vista del Cliente
     object Home : Screen("home")
     object Search : Screen("search")
     object SearchResults : Screen("search_results?query={query}") {
@@ -71,8 +71,11 @@ sealed class Screen(val route: String) {
     object Notifications : Screen("notifications")
     object NotificationSettings : Screen("notifications_settings")
     object Settings : Screen("settings")
+    object VetDetail : Screen("vet_detail/{vetId}") {
+        fun createRoute(vetId: String) = "vet_detail/$vetId"
+    }
 
-    // Veterinaria
+    // Vista de la Veterinaria
     object HomeVet : Screen("home_vet")
     object VetProfile : Screen("vet_profile")
     object VetEditProfile : Screen("vet_edit_profile")
@@ -87,10 +90,8 @@ sealed class Screen(val route: String) {
     object VetNotificationsSettings : Screen("vet_notifications_settings")
     object VetChangePassword : Screen("vet_change_password")
 
-    // Detalles
-    object VetDetail : Screen("vet_detail/{vetId}") {
-        fun createRoute(vetId: String) = "vet_detail/$vetId"
-    }
+
+
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -242,6 +243,17 @@ fun NavGraph(
         composable(Screen.Settings.route) {
             SettingsScreen(navController = navController, onMenuClick = onMenuClick)
         }
+        composable(
+            route = Screen.VetDetail.route,
+            arguments = listOf(navArgument("vetId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            VetDetailScreen(
+                navController = navController,
+                veterinaryId = backStackEntry.arguments?.getString("vetId") ?: "",
+                onMenuClick = onMenuClick
+            )
+        }
+
 
         // Veterinaria
         composable(Screen.HomeVet.route) {
@@ -284,17 +296,7 @@ fun NavGraph(
             VetChangePasswordScreen(navController = navController)
         }
 
-        // Detalles
-        composable(
-            route = Screen.VetDetail.route,
-            arguments = listOf(navArgument("vetId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            VetDetailScreen(
-                navController = navController,
-                veterinaryId = backStackEntry.arguments?.getString("vetId") ?: "",
-                onMenuClick = onMenuClick
-            )
-        }
+
     }
 }
 

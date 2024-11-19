@@ -75,11 +75,6 @@ class VeterinaryRepository {
             }
         }
 
-    suspend fun getAllServices(): ApiResult<List<VeterinaryService>> = withContext(Dispatchers.IO) {
-        safeApiCall {
-            api.getMockServices().services
-        }
-    }
 
 
     suspend fun getReviewsForVeterinary(veterinaryId: String): ApiResult<List<Review>> =
