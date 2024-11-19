@@ -24,8 +24,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.luciano.vetconnect.R
-import com.luciano.vetconnect.shared.ui.components.BusinessHours
-import com.luciano.vetconnect.shared.ui.components.BusinessHoursItem
+import com.luciano.vetconnect.shared.ui.components.veterinary.BusinessHours
+import com.luciano.vetconnect.shared.ui.components.veterinary.BusinessHoursItem
 import com.luciano.vetconnect.shared.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
