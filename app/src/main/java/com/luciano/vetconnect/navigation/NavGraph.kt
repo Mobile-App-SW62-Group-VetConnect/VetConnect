@@ -47,6 +47,7 @@ import com.luciano.vetconnect.features.veterinary.statistics.VetStatisticsScreen
 import com.luciano.vetconnect.shared.ui.components.client.MenuOverlay
 import com.luciano.vetconnect.shared.ui.components.veterinary.MenuOverlayVet
 import com.luciano.vetconnect.features.client.settings.NotificationSettingsScreen
+import com.luciano.vetconnect.shared.ui.components.privacy.PrivacyPoliciesScreen
 import com.luciano.vetconnect.shared.ui.theme.*
 
 sealed class Screen(val route: String) {
@@ -90,6 +91,9 @@ sealed class Screen(val route: String) {
     object VetNotificationsSettings : Screen("vet_notifications_settings")
     object VetChangePassword : Screen("vet_change_password")
 
+
+    //Shared
+    object PrivacyPolicies : Screen("privacy_policies")
 
 
 }
@@ -252,6 +256,9 @@ fun NavGraph(
                 veterinaryId = backStackEntry.arguments?.getString("vetId") ?: "",
                 onMenuClick = onMenuClick
             )
+        }
+        composable(Screen.PrivacyPolicies.route) {
+            PrivacyPoliciesScreen(navController = navController, onMenuClick = onMenuClick)
         }
 
 

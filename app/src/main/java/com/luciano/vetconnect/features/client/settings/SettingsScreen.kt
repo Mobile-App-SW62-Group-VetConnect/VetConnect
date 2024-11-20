@@ -13,11 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.luciano.vetconnect.navigation.Screen
 import com.luciano.vetconnect.navigation.TopAppBar
+import com.luciano.vetconnect.shared.ui.components.privacy.PrivacyPoliciesScreen
 import com.luciano.vetconnect.shared.ui.theme.*
+
 
 @Composable
 fun SettingsScreen(
@@ -115,7 +119,7 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Outlined.Policy,
                     title = "Política de privacidad",
-                    onClick = { /* TODO: Navigate to privacy policy */ }
+                    onClick = { navController.navigate(Screen.PrivacyPolicies.route) }
                 )
                 SettingsItem(
                     icon = Icons.Outlined.Security,
@@ -199,5 +203,12 @@ private fun SettingsItem(
             contentDescription = null,
             tint = NeutralColors.Gray2
         )
+    }
+}
+@Preview
+@Composable
+fun prevScreen(){
+    val navController = rememberNavController()
+    SettingsScreen(navController) {
     }
 }
