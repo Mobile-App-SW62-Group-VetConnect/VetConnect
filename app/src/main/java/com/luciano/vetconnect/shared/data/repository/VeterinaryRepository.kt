@@ -10,6 +10,7 @@ import com.luciano.vetconnect.shared.data.models.*
 import com.luciano.vetconnect.shared.data.models.auth.AuthResponse
 import com.luciano.vetconnect.shared.data.models.auth.SignInRequest
 import com.luciano.vetconnect.shared.data.models.auth.SignUpRequest
+import com.luciano.vetconnect.shared.data.models.vetinfobyid.VetInfobyIdResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
@@ -74,14 +75,15 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
         phone: String,
         address: String? = null
     ): Result<AuthResponse> {
+        println("VeterinaryRepository - Nombres: $name") // Log para verificar el valor de name
         val request = SignUpRequest(
             email = email,
             password = password,
             roles = listOf("CLIENT"),
-            clientName = name,
-            clientDni = dni,
-            clientPhone = phone,
-            clientAddress = address
+            name = name,
+            dni = dni,
+            phone = phone,
+            address = address
         )
 
         return try {
@@ -95,6 +97,22 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
             Result.failure(e)
         }
     }
+
+
+    //VetInfoByID con Backend Real
+    suspend fun getVetInfoById(vetCenterId: Long, token: String): Result<VetInfobyIdResponse> {
+        return try {
+            val response = realApi.getVetInfobyId(vetCenterId, "Bearer $token")
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error al obtener la información de la veterinaria: ${response.errorBody()?.string()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 
     // Login y autenticación con Mock
     suspend fun login(email: String, password: String): ApiResult<LoginResponse> {
@@ -268,11 +286,18 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
 
     companion object {
         @Volatile
-        private var instance: VeterinaryRepository? = null
+        private var mockinstance: VeterinaryRepository? = null
+        @Volatile
+        private var realInstance: VeterinaryRepository? = null
 
         fun getInstance(apiService: ApiService = RetrofitInstance.getMockApi()): VeterinaryRepository {
-            return instance ?: synchronized(this) {
-                instance ?: VeterinaryRepository(apiService).also { instance = it }
+            return mockinstance ?: synchronized(this) {
+                mockinstance ?: VeterinaryRepository(apiService).also { mockinstance = it }
+            }
+        }
+        fun getInstanceReal(apiService: ApiService = RetrofitInstance.getRealApi()): VeterinaryRepository {
+            return realInstance ?: synchronized(this) {
+                realInstance ?: VeterinaryRepository(apiService).also { realInstance = it }
             }
         }
     }

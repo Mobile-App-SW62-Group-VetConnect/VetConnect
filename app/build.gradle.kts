@@ -52,6 +52,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.runtime.livedata)
     val composeBomVersion = "2024.04.01"
     val navVersion = "2.7.7"
     val lifecycleVersion = "2.8.4"

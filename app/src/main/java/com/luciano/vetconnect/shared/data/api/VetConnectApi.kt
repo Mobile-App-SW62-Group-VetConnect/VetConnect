@@ -7,6 +7,7 @@ import com.luciano.vetconnect.shared.data.models.*
 import com.luciano.vetconnect.shared.data.models.auth.AuthResponse
 import com.luciano.vetconnect.shared.data.models.auth.SignInRequest
 import com.luciano.vetconnect.shared.data.models.auth.SignUpRequest
+import com.luciano.vetconnect.shared.data.models.vetinfobyid.VetInfobyIdResponse
 import kotlinx.datetime.LocalDateTime
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -23,6 +24,12 @@ interface ApiService {
 
     @POST(ApiConfig.SIGN_UP_URL)
     suspend fun signUp(@Body request: SignUpRequest): Response<AuthResponse>
+
+
+    // VetInfobyId
+    @GET(ApiConfig.VETINFO_BY_ID_URL)
+    suspend fun getVetInfobyId(@Path("vetCenterId") vetCenterId: Long,
+                               @Header("Authorization") token: String): Response<VetInfobyIdResponse>
 
     // Veterinarias
     @GET("bd5e139a-4409-476e-b15e-fa67be717a7e")

@@ -47,6 +47,7 @@ import com.luciano.vetconnect.features.veterinary.statistics.VetStatisticsScreen
 import com.luciano.vetconnect.shared.ui.components.client.MenuOverlay
 import com.luciano.vetconnect.shared.ui.components.veterinary.MenuOverlayVet
 import com.luciano.vetconnect.features.client.settings.NotificationSettingsScreen
+import com.luciano.vetconnect.shared.data.repository.VeterinaryRepository
 import com.luciano.vetconnect.shared.ui.theme.*
 
 sealed class Screen(val route: String) {
@@ -257,7 +258,8 @@ fun NavGraph(
 
         // Veterinaria
         composable(Screen.HomeVet.route) {
-            HomeVetScreen(navController = navController, onMenuClick = onMenuClick)
+            val repository = VeterinaryRepository.getInstanceReal()
+            HomeVetScreen(navController = navController, onMenuClick = onMenuClick, repository = repository)
         }
         composable(Screen.VetProfile.route) {
             VetProfileScreen(navController = navController)
