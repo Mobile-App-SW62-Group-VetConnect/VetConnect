@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.luciano.vetconnect.shared.data.models.vetinfobyid.VetInfobyIdResponse
+import com.luciano.vetconnect.shared.data.models.backendmodels.VetCenterResponse
 import com.luciano.vetconnect.shared.data.repository.VeterinaryRepository
 import kotlinx.coroutines.launch
 
@@ -13,15 +13,15 @@ class HomeViewModel(
     private val repository: VeterinaryRepository
 ) : ViewModel() {
 
-    private val _veterinaryInfo = MutableLiveData<VetInfobyIdResponse>()
-    val veterinaryInfo: LiveData<VetInfobyIdResponse> get() = _veterinaryInfo
+    private val _veterinaryInfo = MutableLiveData<VetCenterResponse>()
+    val veterinaryInfo: LiveData<VetCenterResponse> get() = _veterinaryInfo
 
     private val _errorMessage = MutableLiveData<String>()
     val errorMessage: LiveData<String> get() = _errorMessage
 
     fun fetchVeterinaryInfo(vetId: Long, token: String) {
         viewModelScope.launch {
-            val result = repository.getVetInfoById(vetId, token)
+            val result = repository.getVetInfobyId(vetId, token)
             if (result.isSuccess) {
                 result.getOrNull()?.let {
                     _veterinaryInfo.value = it

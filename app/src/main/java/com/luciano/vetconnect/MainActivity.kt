@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import com.luciano.vetconnect.navigation.VetConnectApp
 import com.luciano.vetconnect.shared.ui.theme.VetConnectTheme
+import com.luciano.vetconnect.shared.utils.UserManager
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -15,6 +16,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             VetConnectTheme {
                 VetConnectApp()
+                UserManager.init(this)
             }
         }
     }

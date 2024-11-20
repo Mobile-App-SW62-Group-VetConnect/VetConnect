@@ -1,5 +1,6 @@
 package com.luciano.vetconnect.features.auth.register
 
+import RegisterViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -34,7 +35,7 @@ fun RegisterScreen(
     navController: NavController,
     viewModel: RegisterViewModel = viewModel(
         factory = RegisterViewModel.provideFactory(
-            veterinaryRepository = VeterinaryRepository.getInstance()
+            repository = VeterinaryRepository.getInstanceReal()
         )
     )
 ) {val focusManager = LocalFocusManager.current

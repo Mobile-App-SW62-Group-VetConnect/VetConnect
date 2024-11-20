@@ -7,7 +7,7 @@ import com.luciano.vetconnect.shared.data.models.Review
 import com.luciano.vetconnect.shared.data.models.User
 import com.luciano.vetconnect.shared.data.models.Favorite
 import com.luciano.vetconnect.shared.data.models.UserRole
-import com.luciano.vetconnect.shared.data.models.auth.AuthResponse
+import com.luciano.vetconnect.shared.data.models.backendmodels.AuthResponse
 import com.luciano.vetconnect.shared.data.repository.VeterinaryRepository
 import com.luciano.vetconnect.shared.utils.UserManager
 import kotlinx.coroutines.flow.*

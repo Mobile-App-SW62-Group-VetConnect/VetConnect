@@ -1,32 +1,57 @@
 package com.luciano.vetconnect.shared.data.api
 
 object ApiConfig {
-
-    //BASE URL APIS
+    // Base URLs
     const val BASE_URL = "https://mocki.io/v1/"
-    const val APIBASE_URL = "http://10.0.2.2:8080/"  // localhost para Android Emulator
+    const val APIBASE_URL = "http://10.0.2.2:8080/"  // localhost for Android Emulator
 
-
-    //BACKEND API
+    // Connection timeouts
+    const val CONNECT_TIMEOUT = 30L
+    const val READ_TIMEOUT = 30L
+    const val WRITE_TIMEOUT = 30L
 
     // Authentication endpoints
     const val SIGN_IN_URL = "api/v1/authentication/sign-in"
     const val SIGN_UP_URL = "api/v1/authentication/sign-up"
+    const val CHANGE_PASSWORD_URL = "api/v1/authentication/{userId}/change-password"
 
-    // VeterinaryView endpoints
-    const val VETINFO_BY_ID_URL = "api/v1/vet-centers/{vetCenterId}"
-
-
-    //MOCK API
-    const val VETERINARIES_ENDPOINT = "https://mocki.io/v1/bd5e139a-4409-476e-b15e-fa67be717a7e"
-    const val SERVICES_ENDPOINT = "https://mocki.io/v1/b66e9954-1966-490f-9168-6556b5ece9ea"
-    const val REVIEWS_ENDPOINT = "https://mocki.io/v1/c3b75cf5-064a-4fb0-942a-c5508b1858c3"  // Reemplaza con tu endpoint
-    const val USERS_ENDPOINT = "https://mocki.io/v1/6eec656c-acb4-4f28-a927-fe8111d2acd7"
-    const val FAVORITES_ENDPOINT = "https://mocki.io/v1/646ff380-c8ce-4123-83fc-8a9331bfe01e"
+    // User endpoints
+    const val GET_ALL_USERS_URL = "api/v1/users"
+    const val GET_USER_BY_ID_URL = "api/v1/users/{userId}"
 
 
+    // Veterinary Center endpoints
+    const val GET_ALL_VET_CENTERS_URL = "api/v1/vet-centers"
+    const val GET_VET_CENTER_BY_ID_URL = "api/v1/vet-centers/{vetCenterId}"
+    const val GET_VET_CENTER_BY_NAME_URL = "api/v1/vet-centers/name/{vetCenterName}"
+    const val UPDATE_VET_CENTER_URL = "api/v1/vet-centers/{vetCenterId}"
+    const val GET_VET_CENTER_IMAGES_URL = "api/v1/vet-centers/{vetCenterId}/images"
+    const val ADD_VET_CENTER_IMAGE_URL = "api/v1/vet-centers/{vetCenterId}/images"
 
-    const val CONNECT_TIMEOUT = 30L
-    const val READ_TIMEOUT = 30L
-    const val WRITE_TIMEOUT = 30L
+    // Pet Owner endpoints
+    const val CREATE_PET_OWNER_URL = "api/v1/pet-owners"
+    const val GET_ALL_PET_OWNERS_URL = "api/v1/pet-owners"
+    const val GET_PET_OWNER_BY_ID_URL = "api/v1/pet-owners/{petOwnerId}"
+    const val UPDATE_PET_OWNER_URL = "api/v1/pet-owners/{petOwnerId}"
+
+    // Reviews endpoints
+    const val CREATE_REVIEW_URL = "api/v1/reviews"
+    const val GET_ALL_REVIEWS_URL = "api/v1/reviews"
+    const val GET_REVIEWS_BY_VET_CENTER_URL = "api/v1/reviews/vet-center/{vetCenterId}"
+    const val DELETE_REVIEW_URL = "api/v1/reviews"
+
+    // Vet Services endpoints
+    const val CREATE_VET_SERVICE_URL = "api/v1/vet-services"
+    const val GET_ALL_VET_SERVICES_URL = "api/v1/vet-services"
+    const val GET_VET_SERVICE_BY_ID_URL = "api/v1/vet-services/{vetServiceId}"
+    const val GET_VET_SERVICES_BY_VET_CENTER_URL = "api/v1/vet-services/vet-center/{vetCenterId}"
+    const val UPDATE_VET_SERVICE_URL = "api/v1/vet-services/{vetServiceId}"
+    const val DELETE_VET_SERVICE_URL = "api/v1/vet-services/{vetServiceId}"
+
+    // Favorites endpoints
+    const val CREATE_FAVORITE_URL = "api/v1/favorites"
+    const val GET_ALL_FAVORITES_URL = "api/v1/favorites"
+    const val GET_FAVORITE_BY_ID_URL = "api/v1/favorites/by-id/{favoriteId}"
+    const val GET_FAVORITES_BY_USER_URL = "api/v1/favorites/by-user/{userId}"
+    const val DELETE_FAVORITE_URL = "api/v1/favorites/{favoriteId}"
 }

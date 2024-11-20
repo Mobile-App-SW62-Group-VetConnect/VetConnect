@@ -1,25 +1,35 @@
 package com.luciano.vetconnect.shared.data.repository
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.luciano.vetconnect.shared.data.api.ApiResult
 import com.luciano.vetconnect.shared.data.api.ApiService
 import com.luciano.vetconnect.shared.data.api.RetrofitInstance
 import com.luciano.vetconnect.shared.data.api.safeApiCall
 import com.luciano.vetconnect.shared.data.models.*
-import com.luciano.vetconnect.shared.data.models.auth.AuthResponse
-import com.luciano.vetconnect.shared.data.models.auth.SignInRequest
-import com.luciano.vetconnect.shared.data.models.auth.SignUpRequest
-import com.luciano.vetconnect.shared.data.models.vetinfobyid.VetInfobyIdResponse
+import com.luciano.vetconnect.shared.data.models.backendmodels.AddVetCenterImageRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.AuthResponse
+import com.luciano.vetconnect.shared.data.models.backendmodels.ChangePasswordRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.CreateFavoriteRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.CreatePetOwnerRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.CreateReviewRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.FavoriteResponse
+import com.luciano.vetconnect.shared.data.models.backendmodels.PetOwnerResponse
+import com.luciano.vetconnect.shared.data.models.backendmodels.SignInRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.SignUpRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.UpdatePetOwnerRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.UpdateVetCenterRequest
+import com.luciano.vetconnect.shared.data.models.backendmodels.VetCenterImageResponse
+import com.luciano.vetconnect.shared.data.models.backendmodels.VetCenterResponse
+import com.luciano.vetconnect.shared.data.models.vetservices.CreateVetServiceRequest
+import com.luciano.vetconnect.shared.data.models.vetservices.UpdateVetServiceRequest
+import com.luciano.vetconnect.shared.data.models.vetservices.VetServiceResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.time.LocalDateTime
 
 class VeterinaryRepository private constructor(private val apiService: ApiService) {
     private val mockApi = RetrofitInstance.getMockApi()
     private val realApi = RetrofitInstance.getRealApi()
 
-    // Autenticación con Backend Real
+    // Authentication Methods
     suspend fun signIn(email: String, password: String): Result<AuthResponse> {
         return try {
             val response = realApi.signIn(SignInRequest(email, password))
@@ -33,27 +43,7 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
         }
     }
 
-    //Creación de cuenta Veterinaria con Backend Real
-    suspend fun signUpVeterinary(
-        email: String,
-        password: String,
-        clinicName: String,
-        ruc: String,
-        license: String,
-        address: String,
-        phone: String
-    ): Result<AuthResponse> {
-        val request = SignUpRequest(
-            email = email,
-            password = password,
-            roles = listOf("VETERINARY"),
-            vetCenterRuc = ruc,
-            vetCenterClinicName = clinicName,
-            vetCenterLicense = license,
-            vetCenterAddress = address,
-            vetCenterPhone = phone
-        )
-
+    suspend fun signUp(request: SignUpRequest): Result<AuthResponse> {
         return try {
             val response = realApi.signUp(request)
             if (response.isSuccessful && response.body() != null) {
@@ -66,54 +56,272 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
         }
     }
 
-    //Creación de cuenta Cliente con Backend Real
-    suspend fun signUpClient(
-        email: String,
-        password: String,
-        name: String,
-        dni: String,
-        phone: String,
-        address: String? = null
-    ): Result<AuthResponse> {
-        println("VeterinaryRepository - Nombres: $name") // Log para verificar el valor de name
-        val request = SignUpRequest(
-            email = email,
-            password = password,
-            roles = listOf("CLIENT"),
-            name = name,
-            dni = dni,
-            phone = phone,
-            address = address
-        )
-
+    suspend fun changePassword(userId: Long, oldPassword: String, newPassword: String, token: String): Result<UserResponse> {
         return try {
-            val response = realApi.signUp(request)
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Error en el registro: ${response.errorBody()?.string()}"))
-            }
+            val response = realApi.changePassword(
+                userId,
+                ChangePasswordRequest(oldPassword, newPassword),
+                "Bearer $token"
+            )
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // User Methods
+    suspend fun getAllUsers(token: String): Result<List<UserResponse>> {
+        return try {
+            val response = realApi.getAllUsers("Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getUserById(userId: Long, token: String): Result<UserResponse> {
+        return try {
+            val response = realApi.getUserById(userId, "Bearer $token")
+            handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
 
-    //VetInfoByID con Backend Real
-    suspend fun getVetInfoById(vetCenterId: Long, token: String): Result<VetInfobyIdResponse> {
+    // Vet Center Methods
+    suspend fun getAllVetCenters(token: String): Result<List<VetCenterResponse>> {
+        return try {
+            val response = realApi.getAllVetCenters("Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getVetInfobyId(vetCenterId: Long, token: String): Result<VetCenterResponse> {
         return try {
             val response = realApi.getVetInfobyId(vetCenterId, "Bearer $token")
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                Result.failure(Exception("Error al obtener la información de la veterinaria: ${response.errorBody()?.string()}"))
-            }
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getVetCenterByName(vetCenterName: String, token: String): Result<VetCenterResponse> {
+        return try {
+            val response = realApi.getVetCenterByName(vetCenterName, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateVetCenter(vetCenterId: Long, request: UpdateVetCenterRequest, token: String): Result<VetCenterResponse> {
+        return try {
+            val response = realApi.updateVetCenter(vetCenterId, request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getVetCenterImages(vetCenterId: Long, token: String): Result<List<VetCenterImageResponse>> {
+        return try {
+            val response = realApi.getVetCenterImages(vetCenterId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun addVetCenterImage(vetCenterId: Long, request: AddVetCenterImageRequest, token: String): Result<String> {
+        return try {
+            val response = realApi.addVetCenterImage(vetCenterId, request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Pet Owner Methods
+    suspend fun createPetOwner(request: CreatePetOwnerRequest, token: String): Result<PetOwnerResponse> {
+        return try {
+            val response = realApi.createPetOwner(request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAllPetOwners(token: String): Result<List<PetOwnerResponse>> {
+        return try {
+            val response = realApi.getAllPetOwners("Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getPetOwnerById(petOwnerId: Long, token: String): Result<PetOwnerResponse> {
+        return try {
+            val response = realApi.getPetOwnerById(petOwnerId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updatePetOwner(petOwnerId: Long, request: UpdatePetOwnerRequest, token: String): Result<PetOwnerResponse> {
+        return try {
+            val response = realApi.updatePetOwner(petOwnerId, request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Review Methods
+    suspend fun createReview(request: CreateReviewRequest, token: String): Result<ReviewResponse> {
+        return try {
+            val response = realApi.createReview(request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAllReviews(token: String): Result<List<ReviewResponse>> {
+        return try {
+            val response = realApi.getAllReviews("Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getReviewsByVetCenter(vetCenterId: Long, token: String): Result<List<ReviewResponse>> {
+        return try {
+            val response = realApi.getReviewsByVetCenter(vetCenterId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteReview(reviewId: Long, token: String): Result<Unit> {
+        return try {
+            val response = realApi.deleteReview(reviewId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Vet Service Methods
+    suspend fun createVetService(request: CreateVetServiceRequest, token: String): Result<VetServiceResponse> {
+        return try {
+            val response = realApi.createVetService(request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAllVetServices(token: String): Result<List<VetServiceResponse>> {
+        return try {
+            val response = realApi.getAllVetServices("Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getVetServiceById(vetServiceId: Long, token: String): Result<VetServiceResponse> {
+        return try {
+            val response = realApi.getVetServiceById(vetServiceId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getVetServicesByVetCenter(vetCenterId: Long, token: String): Result<List<VetServiceResponse>> {
+        return try {
+            val response = realApi.getVetServicesByVetCenter(vetCenterId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateVetService(vetServiceId: Long, request: UpdateVetServiceRequest, token: String): Result<VetServiceResponse> {
+        return try {
+            val response = realApi.updateVetService(vetServiceId, request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteVetService(vetServiceId: Long, token: String): Result<Unit> {
+        return try {
+            val response = realApi.deleteVetService(vetServiceId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Favorite Methods
+    suspend fun createFavorite(request: CreateFavoriteRequest, token: String): Result<FavoriteResponse> {
+        return try {
+            val response = realApi.createFavorite(request, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getAllFavorites(token: String): Result<List<FavoriteResponse>> {
+        return try {
+            val response = realApi.getAllFavorites("Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getFavoriteById(favoriteId: Long, token: String): Result<FavoriteResponse> {
+        return try {
+            val response = realApi.getFavoriteById(favoriteId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getFavoritesByUser(userId: Long, token: String): Result<FavoriteResponse> {
+        return try {
+            val response = realApi.getFavoritesByUser(userId, "Bearer $token")
+            handleResponse(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteFavorite(favoriteId: Long, token: String): Result<Unit> {
+        return try {
+            val response = realApi.deleteFavorite(favoriteId, "Bearer $token")
+            handleResponse(response)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
 
+
+    //MOCKAPI
     // Login y autenticación con Mock
     suspend fun login(email: String, password: String): ApiResult<LoginResponse> {
         return mockLogin(email, password)
@@ -281,6 +489,15 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
                 else result.data.map { it.price }.average()
             }
             is ApiResult.Error -> 0.0
+        }
+    }
+
+    // Helper function to handle API responses
+    private fun <T> handleResponse(response: retrofit2.Response<T>): Result<T> {
+        return if (response.isSuccessful && response.body() != null) {
+            Result.success(response.body()!!)
+        } else {
+            Result.failure(Exception("Error: ${response.errorBody()?.string()}"))
         }
     }
 

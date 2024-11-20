@@ -1,8 +1,7 @@
-package com.luciano.vetconnect.features.auth.register
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.luciano.vetconnect.shared.data.models.backendmodels.SignUpRequest
 import com.luciano.vetconnect.shared.data.repository.VeterinaryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,18 +11,24 @@ import kotlinx.coroutines.launch
 sealed class RegisterState {
     object Initial : RegisterState()
     object Loading : RegisterState()
-    data class Success(val isVetUser: Boolean) : RegisterState()
+    data class Success(val message: String) : RegisterState()
     data class Error(val message: String) : RegisterState()
 }
 
 class RegisterViewModel(
-    private val veterinaryRepository: VeterinaryRepository
+    private val repository: VeterinaryRepository
 ) : ViewModel() {
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Initial)
     val registerState: StateFlow<RegisterState> = _registerState.asStateFlow()
 
+    // Agregamos el método setError que faltaba
     fun setError(message: String) {
         _registerState.value = RegisterState.Error(message)
+    }
+
+    // Agregamos método para resetear el estado
+    fun resetState() {
+        _registerState.value = RegisterState.Initial
     }
 
     private fun validateEmail(email: String): Boolean {
@@ -56,53 +61,57 @@ class RegisterViewModel(
         phone: String,
         address: String? = null
     ) {
-        println("RegisterViewModel - Nombres: $name") // Log para verificar el valor de name
         // Validaciones
         when {
             !validateEmail(email) -> {
-                _registerState.value = RegisterState.Error("Correo electrónico inválido")
+                setError("Correo electrónico inválido")
                 return
             }
             !validatePassword(password) -> {
-                _registerState.value = RegisterState.Error("La contraseña debe tener al menos 8 caracteres, una letra y un número")
+                setError("La contraseña debe tener al menos 8 caracteres, una letra y un número")
                 return
             }
             name.isBlank() -> {
-                _registerState.value = RegisterState.Error("El nombre es requerido")
+                setError("El nombre es requerido")
                 return
             }
             !validateDNI(dni) -> {
-                _registerState.value = RegisterState.Error("DNI inválido")
+                setError("DNI inválido")
                 return
             }
             !validatePhoneNumber(phone) -> {
-                _registerState.value = RegisterState.Error("Número de teléfono inválido")
+                setError("Número de teléfono inválido")
                 return
             }
         }
 
         viewModelScope.launch {
             _registerState.value = RegisterState.Loading
+
             try {
-                val result = veterinaryRepository.signUpClient(
+                val signUpRequest = SignUpRequest(
                     email = email,
                     password = password,
+                    roles = listOf("CLIENT"),
                     name = name,
                     dni = dni,
                     phone = phone,
                     address = address
                 )
 
+                val result = repository.signUp(signUpRequest)
                 result.fold(
                     onSuccess = {
-                        _registerState.value = RegisterState.Success(false)
+                        _registerState.value = RegisterState.Success("Registro exitoso")
                     },
                     onFailure = { exception ->
-                        _registerState.value = RegisterState.Error(exception.message ?: "Error en el registro")
+                        _registerState.value = RegisterState.Error(
+                            exception.message ?: "Error al registrar usuario"
+                        )
                     }
                 )
             } catch (e: Exception) {
-                _registerState.value = RegisterState.Error(e.message ?: "Error en el registro")
+                _registerState.value = RegisterState.Error(e.message ?: "Error desconocido")
             }
         }
     }
@@ -119,73 +128,74 @@ class RegisterViewModel(
         // Validaciones
         when {
             !validateEmail(email) -> {
-                _registerState.value = RegisterState.Error("Correo electrónico inválido")
+                setError("Correo electrónico inválido")
                 return
             }
             !validatePassword(password) -> {
-                _registerState.value = RegisterState.Error("La contraseña debe tener al menos 8 caracteres, una letra y un número")
+                setError("La contraseña debe tener al menos 8 caracteres, una letra y un número")
                 return
             }
             clinicName.isBlank() -> {
-                _registerState.value = RegisterState.Error("El nombre de la clínica es requerido")
+                setError("El nombre de la clínica es requerido")
                 return
             }
             !validateRUC(ruc) -> {
-                _registerState.value = RegisterState.Error("RUC inválido")
+                setError("RUC inválido")
                 return
             }
             license.isBlank() -> {
-                _registerState.value = RegisterState.Error("El número de licencia es requerido")
+                setError("El número de licencia es requerido")
                 return
             }
             !validatePhoneNumber(phone) -> {
-                _registerState.value = RegisterState.Error("Número de teléfono inválido")
+                setError("Número de teléfono inválido")
                 return
             }
             address.isBlank() -> {
-                _registerState.value = RegisterState.Error("La dirección es requerida")
+                setError("La dirección es requerida")
                 return
             }
         }
 
         viewModelScope.launch {
             _registerState.value = RegisterState.Loading
+
             try {
-                val result = veterinaryRepository.signUpVeterinary(
+                val signUpRequest = SignUpRequest(
                     email = email,
                     password = password,
-                    clinicName = clinicName,
-                    ruc = ruc,
-                    license = license,
-                    address = address,
-                    phone = phone
+                    roles = listOf("VETERINARY"),
+                    vetCenterClinicName = clinicName,
+                    vetCenterRuc = ruc,
+                    vetCenterLicense = license,
+                    vetCenterAddress = address,
+                    vetCenterPhone = phone
                 )
 
+                val result = repository.signUp(signUpRequest)
                 result.fold(
                     onSuccess = {
-                        _registerState.value = RegisterState.Success(true)
+                        _registerState.value = RegisterState.Success("Registro exitoso")
                     },
                     onFailure = { exception ->
-                        _registerState.value = RegisterState.Error(exception.message ?: "Error en el registro")
+                        _registerState.value = RegisterState.Error(
+                            exception.message ?: "Error al registrar veterinaria"
+                        )
                     }
                 )
             } catch (e: Exception) {
-                _registerState.value = RegisterState.Error(e.message ?: "Error en el registro")
+                _registerState.value = RegisterState.Error(e.message ?: "Error desconocido")
             }
         }
     }
 
-    fun resetState() {
-        _registerState.value = RegisterState.Initial
-    }
-
     companion object {
         fun provideFactory(
-            veterinaryRepository: VeterinaryRepository
+            repository: VeterinaryRepository
         ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return RegisterViewModel(veterinaryRepository) as T
+                return RegisterViewModel(repository) as T
             }
         }
     }

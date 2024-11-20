@@ -45,7 +45,7 @@ fun HomeVetScreen(
     val errorMessage by viewModel.errorMessage.observeAsState()
 
     LaunchedEffect(Unit) {
-        val token = UserManager.getToken()
+        val token = UserManager.getBearerToken()
         if (token != null) {
             viewModel.fetchVeterinaryInfo(vetId = 2, token = token)
         } else {
