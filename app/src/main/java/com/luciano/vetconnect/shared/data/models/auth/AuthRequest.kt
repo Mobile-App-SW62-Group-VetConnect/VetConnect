@@ -9,9 +9,15 @@ data class SignUpRequest(
     val email: String,
     val password: String,
     val roles: List<String>,
-    val vetCenterRuc: String,
-    val vetCenterClinicName: String,
-    val vetCenterLicense: String,
-    val vetCenterAddress: String,
-    val vetCenterPhone: String
+    // Campos para CLIENT
+    val clientName: String? = null,
+    val clientDni: String? = null,
+    val clientPhone: String? = null,
+    val clientAddress: String? = null,
+    // Campos para VETERINARY
+    val vetCenterRuc: String? = null,
+    val vetCenterClinicName: String? = null,
+    val vetCenterLicense: String? = null,
+    val vetCenterAddress: String? = null,
+    val vetCenterPhone: String? = null
 )

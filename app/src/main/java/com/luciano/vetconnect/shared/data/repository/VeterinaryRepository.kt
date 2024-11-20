@@ -32,6 +32,7 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
         }
     }
 
+    //Creación de cuenta Veterinaria con Backend Real
     suspend fun signUpVeterinary(
         email: String,
         password: String,
@@ -50,6 +51,37 @@ class VeterinaryRepository private constructor(private val apiService: ApiServic
             vetCenterLicense = license,
             vetCenterAddress = address,
             vetCenterPhone = phone
+        )
+
+        return try {
+            val response = realApi.signUp(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error en el registro: ${response.errorBody()?.string()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    //Creación de cuenta Cliente con Backend Real
+    suspend fun signUpClient(
+        email: String,
+        password: String,
+        name: String,
+        dni: String,
+        phone: String,
+        address: String? = null
+    ): Result<AuthResponse> {
+        val request = SignUpRequest(
+            email = email,
+            password = password,
+            roles = listOf("CLIENT"),
+            clientName = name,
+            clientDni = dni,
+            clientPhone = phone,
+            clientAddress = address
         )
 
         return try {

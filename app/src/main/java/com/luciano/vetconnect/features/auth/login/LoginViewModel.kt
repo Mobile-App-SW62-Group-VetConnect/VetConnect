@@ -23,7 +23,7 @@ class LoginViewModel(
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Initial)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, isVetUser: Boolean) {
         if (email.isBlank() || password.isBlank()) {
             _loginState.value = LoginState.Error("Por favor complete todos los campos")
             return
@@ -35,9 +35,18 @@ class LoginViewModel(
 
             result.fold(
                 onSuccess = { authResponse ->
-                    val isVetUser = authResponse.role == "VETERINARY"
-                    UserManager.setUser(authResponse)
-                    _loginState.value = LoginState.Success(isVetUser)
+                    // Verificar que el rol coincida con lo seleccionado
+                    val roleMatches = when (isVetUser) {
+                        true -> authResponse.role == "VETERINARY"
+                        false -> authResponse.role == "CLIENT"
+                    }
+
+                    if (roleMatches) {
+                        UserManager.setUser(authResponse)
+                        _loginState.value = LoginState.Success(isVetUser)
+                    } else {
+                        _loginState.value = LoginState.Error("Tipo de usuario incorrecto")
+                    }
                 },
                 onFailure = { exception ->
                     _loginState.value = LoginState.Error(exception.message ?: "Error desconocido")

@@ -159,7 +159,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { viewModel.login(email, password) },
+                onClick = { viewModel.login(email, password, isVetUser) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = BrandColors.Primary,
                     contentColor = TextColors.OnDark
