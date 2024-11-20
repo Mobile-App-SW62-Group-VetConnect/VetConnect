@@ -5,15 +5,15 @@ data class User(
     val name: String,
     val email: String,
     val phone: String,
-    val address: String? = null,
-    val imageUrl: String? = null,
-    val role: UserRole,
-    val veterinaryId: String? = null,
-    val license: String? = null,
-    val reviewCount: Int? = null,
-    val favoriteCount: Int? = null,
-    val createdAt: String,  // Mantenido como String
-    val lastLoginAt: String? = null  // Mantenido como String
+    val address: String?,
+    val imageUrl: String?,
+    val role: UserRole, // Enum en lugar de String
+    val veterinaryId: String?,
+    val license: String?,
+    val reviewCount: Int?,
+    val favoriteCount: Int?,
+    val createdAt: String,
+    val lastLoginAt: String?
 )
 
 enum class UserRole {

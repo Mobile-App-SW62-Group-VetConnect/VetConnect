@@ -19,13 +19,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.luciano.vetconnect.R
 import com.luciano.vetconnect.navigation.Screen
+import com.luciano.vetconnect.shared.data.api.RetrofitInstance
+import com.luciano.vetconnect.shared.data.repository.VeterinaryRepository
 import com.luciano.vetconnect.shared.ui.theme.*
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreen(
     navController: NavController,
-    viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel(
+        factory = LoginViewModel.provideFactory(
+            veterinaryRepository = VeterinaryRepository.getInstance()
+        )
+    )
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

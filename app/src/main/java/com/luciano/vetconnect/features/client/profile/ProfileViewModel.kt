@@ -6,6 +6,8 @@ import com.luciano.vetconnect.shared.data.api.ApiResult
 import com.luciano.vetconnect.shared.data.models.Review
 import com.luciano.vetconnect.shared.data.models.User
 import com.luciano.vetconnect.shared.data.models.Favorite
+import com.luciano.vetconnect.shared.data.models.UserRole
+import com.luciano.vetconnect.shared.data.models.auth.AuthResponse
 import com.luciano.vetconnect.shared.data.repository.VeterinaryRepository
 import com.luciano.vetconnect.shared.utils.UserManager
 import kotlinx.coroutines.flow.*
@@ -41,27 +43,38 @@ class ProfileViewModel : ViewModel() {
             }
 
             try {
-                val reviewsResult = repository.getReviewsForUser(currentUser.id)
-                val favoritesResult = repository.getFavoritesForUser(currentUser.id)
+                // Adaptamos los datos del AuthResponse a lo que espera el ProfileState
+                val authUser = UserManager.currentUser.value!!
+                val reviews = emptyList<Review>() // Por ahora, lista vacía
+                val favorites = emptyList<Favorite>() // Por ahora, lista vacía
 
-                when {
-                    reviewsResult is ApiResult.Success && favoritesResult is ApiResult.Success -> {
-                        _profileState.value = ProfileState.Success(
-                            user = currentUser,
-                            reviews = reviewsResult.data,
-                            favorites = favoritesResult.data
-                        )
-                    }
-                    reviewsResult is ApiResult.Error -> {
-                        _profileState.value = ProfileState.Error(reviewsResult.message)
-                    }
-                    favoritesResult is ApiResult.Error -> {
-                        _profileState.value = ProfileState.Error(favoritesResult.message)
-                    }
-                }
+                _profileState.value = ProfileState.Success(
+                    user = convertAuthResponseToUser(authUser),
+                    reviews = reviews,
+                    favorites = favorites
+                )
             } catch (e: Exception) {
                 _profileState.value = ProfileState.Error(e.message ?: "Error desconocido")
             }
         }
+    }
+
+    // Función auxiliar para convertir AuthResponse a User
+    private fun convertAuthResponseToUser(authResponse: AuthResponse): User {
+        return User(
+            id = authResponse.id.toString(),
+            name = authResponse.username,
+            email = authResponse.username,
+            phone = "",
+            address = null,
+            imageUrl = null,
+            role = UserRole.valueOf(authResponse.role), // Ahora solo puede ser CLIENT o VETERINARY
+            veterinaryId = null,
+            license = null,
+            reviewCount = 0,
+            favoriteCount = 0,
+            createdAt = "2024-01-01T00:00:00",
+            lastLoginAt = null
+        )
     }
 }

@@ -57,7 +57,7 @@ fun MenuOverlay(
                         )
                         Column(modifier = Modifier.padding(start = 16.dp)) {
                             Text(
-                                text = currentUser?.name ?: "Usuario",
+                                text = currentUser?.username ?: "Usuario",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextColors.Primary

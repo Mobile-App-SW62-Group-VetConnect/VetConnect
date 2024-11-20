@@ -3,21 +3,78 @@ package com.luciano.vetconnect.shared.data.repository
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.luciano.vetconnect.shared.data.api.ApiResult
+import com.luciano.vetconnect.shared.data.api.ApiService
 import com.luciano.vetconnect.shared.data.api.RetrofitInstance
 import com.luciano.vetconnect.shared.data.api.safeApiCall
 import com.luciano.vetconnect.shared.data.models.*
+import com.luciano.vetconnect.shared.data.models.auth.AuthResponse
+import com.luciano.vetconnect.shared.data.models.auth.SignInRequest
+import com.luciano.vetconnect.shared.data.models.auth.SignUpRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 
-class VeterinaryRepository {
-    private val api = RetrofitInstance.api
+class VeterinaryRepository private constructor(private val apiService: ApiService) {
+    private val mockApi = RetrofitInstance.getMockApi()
+    private val realApi = RetrofitInstance.getRealApi()
+
+    // Autenticación con Backend Real
+    suspend fun signIn(email: String, password: String): Result<AuthResponse> {
+        return try {
+            val response = realApi.signIn(SignInRequest(email, password))
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error en la autenticación: ${response.errorBody()?.string()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun signUpVeterinary(
+        email: String,
+        password: String,
+        clinicName: String,
+        ruc: String,
+        license: String,
+        address: String,
+        phone: String
+    ): Result<AuthResponse> {
+        val request = SignUpRequest(
+            email = email,
+            password = password,
+            roles = listOf("VETERINARY"),
+            vetCenterRuc = ruc,
+            vetCenterClinicName = clinicName,
+            vetCenterLicense = license,
+            vetCenterAddress = address,
+            vetCenterPhone = phone
+        )
+
+        return try {
+            val response = realApi.signUp(request)
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                Result.failure(Exception("Error en el registro: ${response.errorBody()?.string()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Login y autenticación con Mock
+    suspend fun login(email: String, password: String): ApiResult<LoginResponse> {
+        return mockLogin(email, password)
+    }
+
 
     // Mock Login
     private suspend fun mockLogin(email: String, password: String): ApiResult<LoginResponse> {
         return withContext(Dispatchers.IO) {
             try {
-                val response = api.getUsers()
+                val response = mockApi.getUsers()
 
                 // Buscar en credenciales de clientes
                 val clientCredential = response.credentials.clients.find {
@@ -55,13 +112,13 @@ class VeterinaryRepository {
     // Veterinarias
     suspend fun getVeterinaries(): ApiResult<List<Veterinary>> = withContext(Dispatchers.IO) {
         safeApiCall {
-            api.getMockVeterinaries().veterinaries
+            mockApi.getMockVeterinaries().veterinaries
         }
     }
 
     suspend fun getVeterinaryById(id: String): ApiResult<Veterinary> = withContext(Dispatchers.IO) {
         safeApiCall {
-            val response = api.getMockVeterinaries()
+            val response = mockApi.getMockVeterinaries()
             response.veterinaries.find { it.id == id }
                 ?: throw Exception("Veterinaria no encontrada")
         }
@@ -70,7 +127,7 @@ class VeterinaryRepository {
     suspend fun getServicesForVeterinary(veterinaryId: String): ApiResult<List<VeterinaryService>> =
         withContext(Dispatchers.IO) {
             safeApiCall {
-                val response = api.getMockServices()
+                val response = mockApi.getMockServices()
                 response.services.filter { it.veterinaryId == veterinaryId }
             }
         }
@@ -80,21 +137,18 @@ class VeterinaryRepository {
     suspend fun getReviewsForVeterinary(veterinaryId: String): ApiResult<List<Review>> =
         withContext(Dispatchers.IO) {
             safeApiCall {
-                api.getMockReviews().reviews.filter { it.veterinaryId == veterinaryId }
+                mockApi.getMockReviews().reviews.filter { it.veterinaryId == veterinaryId }
             }
         }
 
     suspend fun getReviewsForUser(userId: String): ApiResult<List<Review>> =
         withContext(Dispatchers.IO) {
             safeApiCall {
-                api.getMockReviews().reviews.filter { it.userId == userId }
+                mockApi.getMockReviews().reviews.filter { it.userId == userId }
             }
         }
 
-    // Login y autenticación
-    suspend fun login(email: String, password: String): ApiResult<LoginResponse> {
-        return mockLogin(email, password)
-    }
+
 
     // Detalle completo de veterinaria
     suspend fun getVeterinaryWithDetails(veterinaryId: String): ApiResult<VeterinaryWithDetails> =
@@ -132,7 +186,7 @@ class VeterinaryRepository {
         filterOptions: FilterOptions? = null
     ): ApiResult<List<Veterinary>> = withContext(Dispatchers.IO) {
         safeApiCall {
-            val allVeterinaries = api.getMockVeterinaries().veterinaries
+            val allVeterinaries = mockApi.getMockVeterinaries().veterinaries
 
             allVeterinaries.filter { veterinary ->
                 var matches = true
@@ -156,7 +210,7 @@ class VeterinaryRepository {
 
      suspend fun getFavoritesForUser(userId: String): ApiResult<List<Favorite>> {
     return try {
-        val response = api.getFavoritesForUser()
+        val response = mockApi.getFavoritesForUser()
         if (response.isSuccessful && response.body() != null) {
             // Filtramos los favoritos por userId
             val filteredFavorites = response.body()!!.favorites.filter { it.userId == userId }
@@ -184,9 +238,9 @@ class VeterinaryRepository {
         @Volatile
         private var instance: VeterinaryRepository? = null
 
-        fun getInstance(): VeterinaryRepository {
+        fun getInstance(apiService: ApiService = RetrofitInstance.getMockApi()): VeterinaryRepository {
             return instance ?: synchronized(this) {
-                instance ?: VeterinaryRepository().also { instance = it }
+                instance ?: VeterinaryRepository(apiService).also { instance = it }
             }
         }
     }

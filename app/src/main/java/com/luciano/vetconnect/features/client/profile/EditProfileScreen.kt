@@ -31,10 +31,11 @@ fun EditProfileScreen(
 ) {
     val currentUser by UserManager.currentUser.collectAsState()
 
-    var nombre by remember { mutableStateOf(currentUser?.name ?: "") }
-    var email by remember { mutableStateOf(currentUser?.email ?: "") }
-    var telefono by remember { mutableStateOf(currentUser?.phone ?: "") }
-    var direccion by remember { mutableStateOf(currentUser?.address ?: "") }
+    // Cambiamos a usar los campos del AuthResponse
+    var nombre by remember { mutableStateOf(currentUser?.username ?: "") }
+    var email by remember { mutableStateOf(currentUser?.username ?: "") } // username es el email en AuthResponse
+    var telefono by remember { mutableStateOf("") }
+    var direccion by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {

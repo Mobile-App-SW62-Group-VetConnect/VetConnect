@@ -22,6 +22,7 @@ import com.luciano.vetconnect.shared.ui.theme.*
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.luciano.vetconnect.shared.data.api.ApiResult
+import com.luciano.vetconnect.shared.data.api.ApiService
 import kotlinx.coroutines.launch
 
 data class VeterinaryWithServices(
@@ -40,9 +41,9 @@ fun HomeScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var veterinariesData by remember { mutableStateOf<List<VeterinaryWithServices>>(emptyList()) }
     var isRefreshing by remember { mutableStateOf(false) }
-    val repository = remember { VeterinaryRepository.getInstance() }
     val scope = rememberCoroutineScope()
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+    val repository = remember { VeterinaryRepository.getInstance() }
 
     suspend fun loadVeterinariesWithServices() {
         when (val veterinariesResult = repository.getVeterinaries()) {

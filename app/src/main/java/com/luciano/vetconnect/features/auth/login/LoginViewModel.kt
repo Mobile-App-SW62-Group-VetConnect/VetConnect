@@ -1,11 +1,8 @@
 package com.luciano.vetconnect.features.auth.login
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.luciano.vetconnect.shared.data.api.ApiResult
-import com.luciano.vetconnect.shared.data.models.UserRole
 import com.luciano.vetconnect.shared.data.repository.VeterinaryRepository
 import com.luciano.vetconnect.shared.utils.UserManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,9 +17,9 @@ sealed class LoginState {
     data class Error(val message: String) : LoginState()
 }
 
-class LoginViewModel : ViewModel() {
-    private val repository = VeterinaryRepository.getInstance()
-
+class LoginViewModel(
+    private val veterinaryRepository: VeterinaryRepository
+) : ViewModel() {
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Initial)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
@@ -34,22 +31,33 @@ class LoginViewModel : ViewModel() {
 
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
+            val result = veterinaryRepository.signIn(email, password)
 
-            when (val result = repository.login(email, password)) {
-                is ApiResult.Success -> {
-                    // Guardar el usuario en el UserManager
-                    UserManager.setCurrentUser(result.data.user)
-                    val isVetUser = result.data.user.role == UserRole.VETERINARY
+            result.fold(
+                onSuccess = { authResponse ->
+                    val isVetUser = authResponse.role == "VETERINARY"
+                    UserManager.setUser(authResponse)
                     _loginState.value = LoginState.Success(isVetUser)
+                },
+                onFailure = { exception ->
+                    _loginState.value = LoginState.Error(exception.message ?: "Error desconocido")
                 }
-                is ApiResult.Error -> {
-                    _loginState.value = LoginState.Error(result.message)
-                }
-            }
+            )
         }
     }
 
     fun resetState() {
         _loginState.value = LoginState.Initial
+    }
+
+    companion object {
+        fun provideFactory(
+            veterinaryRepository: VeterinaryRepository
+        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return LoginViewModel(veterinaryRepository) as T
+            }
+        }
     }
 }
