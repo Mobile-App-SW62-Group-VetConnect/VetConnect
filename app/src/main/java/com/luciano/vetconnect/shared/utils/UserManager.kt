@@ -35,7 +35,6 @@ object UserManager {
                 val user = gson.fromJson(userJson, AuthResponse::class.java)
                 _currentUser.value = user
             } catch (e: Exception) {
-                // Si hay error al cargar el usuario, limpiamos los datos
                 clearUser()
             }
         }
@@ -43,7 +42,6 @@ object UserManager {
 
     fun setUser(user: AuthResponse) {
         _currentUser.value = user
-        // Guardamos en SharedPreferences
         prefs.edit().apply {
             putString(KEY_USER, gson.toJson(user))
             putString(KEY_TOKEN, user.token)
@@ -70,10 +68,5 @@ object UserManager {
     fun clearUser() {
         _currentUser.value = null
         prefs.edit().clear().apply()
-    }
-
-    // Helper para obtener el token con el prefijo Bearer
-    fun getBearerToken(): String? {
-        return getToken()?.let { "Bearer $it" }
     }
 }

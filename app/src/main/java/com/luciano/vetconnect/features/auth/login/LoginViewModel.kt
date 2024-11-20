@@ -35,6 +35,7 @@ class LoginViewModel(
 
             result.fold(
                 onSuccess = { authResponse ->
+                    UserManager.setUser(authResponse)
                     // Verificar que el rol coincida con lo seleccionado
                     val roleMatches = when (isVetUser) {
                         true -> authResponse.role == "VETERINARY"

@@ -47,14 +47,21 @@ class VetProfileViewModel(
             _profileState.value = VetProfileState.Loading
 
             try {
-                val token = UserManager.getBearerToken()
+                val token = UserManager.getToken()
                 if (token == null) {
                     _profileState.value = VetProfileState.Error("No se encontró el token de autenticación")
                     return@launch
                 }
 
                 // Obtenemos el ID del usuario actual
-                val vetId = UserManager.currentUser.value?.id ?: return@launch
+                val vetId = UserManager.getUserId()
+                if (vetId == null) {
+                    _profileState.value = VetProfileState.Error("No se encontró la información del usuario")
+                    return@launch
+                }
+
+                println("Debug - Token: $token") // Para verificar el token en logs
+                println("Debug - VetId: $vetId") // Para verificar el ID
 
                 // Cargamos la información del perfil
                 val profileResult = repository.getVetInfobyId(vetId, token)
@@ -78,12 +85,22 @@ class VetProfileViewModel(
                         )
                     },
                     onFailure = { exception ->
-                        _profileState.value = VetProfileState.Error(
-                            exception.message ?: "Error al cargar el perfil"
-                        )
+                        println("Debug - Error: ${exception.message}") // Para verificar el error
+                        when {
+                            exception.message?.contains("authentication", ignoreCase = true) == true -> {
+                                _profileState.value = VetProfileState.Error("Sesión expirada. Por favor, inicie sesión nuevamente")
+                                UserManager.clearUser()
+                            }
+                            else -> {
+                                _profileState.value = VetProfileState.Error(
+                                    exception.message ?: "Error al cargar el perfil"
+                                )
+                            }
+                        }
                     }
                 )
             } catch (e: Exception) {
+                println("Debug - Exception: ${e.message}") // Para verificar excepciones
                 _profileState.value = VetProfileState.Error(e.message ?: "Error desconocido")
             }
         }
@@ -102,7 +119,7 @@ class VetProfileViewModel(
             _updateState.value = UpdateProfileState.Loading
 
             try {
-                val token = UserManager.getBearerToken()
+                val token = UserManager.getToken()
                 if (token == null) {
                     _updateState.value = UpdateProfileState.Error("No se encontró el token de autenticación")
                     return@launch
