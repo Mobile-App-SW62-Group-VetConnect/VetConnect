@@ -3,7 +3,7 @@ package com.luciano.vetconnect.shared.data.api
 object ApiConfig {
     // Base URLs
     const val BASE_URL = "https://mocki.io/v1/"
-    const val APIBASE_URL = "http://10.0.2.2:8080/"  // localhost for Android Emulator
+    const val APIBASE_URL = "http://192.168.1.19:8080/"  // localhost for Android Emulator
 
     // Connection timeouts
     const val CONNECT_TIMEOUT = 30L

@@ -53,57 +53,68 @@ class VetProfileViewModel(
                     return@launch
                 }
 
-                // Obtenemos el ID del usuario actual
-                val vetId = UserManager.getUserId()
-                if (vetId == null) {
-                    _profileState.value = VetProfileState.Error("No se encontró la información del usuario")
-                    return@launch
-                }
-
-                println("Debug - Token: $token") // Para verificar el token en logs
-                println("Debug - VetId: $vetId") // Para verificar el ID
-
-                // Cargamos la información del perfil
-                val profileResult = repository.getVetInfobyId(vetId, token)
-
-                profileResult.fold(
-                    onSuccess = { vetInfo ->
-                        // Cargamos las imágenes
-                        val imagesResult = repository.getVetCenterImages(vetId, token)
-
-                        imagesResult.fold(
-                            onSuccess = { images ->
-                                _profileState.value = VetProfileState.Success(
-                                    vetInfo = vetInfo,
-                                    images = images
-                                )
-                            },
-                            onFailure = { exception ->
-                                // Si falla la carga de imágenes, mostramos el perfil sin imágenes
-                                _profileState.value = VetProfileState.Success(vetInfo = vetInfo)
-                            }
-                        )
-                    },
-                    onFailure = { exception ->
-                        println("Debug - Error: ${exception.message}") // Para verificar el error
-                        when {
-                            exception.message?.contains("authentication", ignoreCase = true) == true -> {
-                                _profileState.value = VetProfileState.Error("Sesión expirada. Por favor, inicie sesión nuevamente")
-                                UserManager.clearUser()
-                            }
-                            else -> {
-                                _profileState.value = VetProfileState.Error(
-                                    exception.message ?: "Error al cargar el perfil"
-                                )
-                            }
-                        }
+                val vetCenterId = UserManager.getVetCenterId()
+                if (vetCenterId == null) {
+                    // Si no tenemos el id guardado, necesitamos obtenerlo primero
+                    val userId = UserManager.getUserId()
+                    if (userId == null) {
+                        _profileState.value = VetProfileState.Error("No se encontró la información del usuario")
+                        return@launch
                     }
-                )
+
+                    // Obtenemos la lista de veterinarias y buscamos la nuestra
+                    val allVetCentersResult = repository.getAllVetCenters(token)
+                    allVetCentersResult.fold(
+                        onSuccess = { vetCenters ->
+                            val vetCenter = vetCenters.find { it.user_id == userId }
+                            if (vetCenter != null) {
+                                // Guardamos la información de la veterinaria para futuras consultas
+                                UserManager.setVetCenterInfo(vetCenter)
+                                loadVetCenterDetails(vetCenter.id, token)
+                            } else {
+                                _profileState.value = VetProfileState.Error("No se encontró la información de la veterinaria")
+                            }
+                        },
+                        onFailure = { exception ->
+                            _profileState.value = VetProfileState.Error(
+                                exception.message ?: "Error al cargar la información de la veterinaria"
+                            )
+                        }
+                    )
+                } else {
+                    // Si ya tenemos el id, cargamos directamente los detalles
+                    loadVetCenterDetails(vetCenterId, token)
+                }
             } catch (e: Exception) {
-                println("Debug - Exception: ${e.message}") // Para verificar excepciones
                 _profileState.value = VetProfileState.Error(e.message ?: "Error desconocido")
             }
         }
+    }
+
+    private suspend fun loadVetCenterDetails(vetCenterId: Long, token: String) {
+        val profileResult = repository.getVetInfobyId(vetCenterId, token)
+        profileResult.fold(
+            onSuccess = { vetInfo ->
+                val imagesResult = repository.getVetCenterImages(vetCenterId, token)
+                imagesResult.fold(
+                    onSuccess = { images ->
+                        _profileState.value = VetProfileState.Success(
+                            vetInfo = vetInfo,
+                            images = images
+                        )
+                    },
+                    onFailure = {
+                        // Si falla la carga de imágenes, mostramos el perfil sin imágenes
+                        _profileState.value = VetProfileState.Success(vetInfo = vetInfo)
+                    }
+                )
+            },
+            onFailure = { exception ->
+                _profileState.value = VetProfileState.Error(
+                    exception.message ?: "Error al cargar el perfil"
+                )
+            }
+        )
     }
 
     fun updateProfile(
